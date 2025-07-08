@@ -21,8 +21,8 @@ export default function Login() {
     const { email, password } = form;
 
     // ✅ Validate IMS Email
-    if (!email.endsWith('@ims.com')) {
-      setError('❌ Only IMS email addresses (e.g. yourname@ims.com) are allowed.');
+    if (!email.endsWith('@imsnoida.com')) {
+      setError('❌ Only IMS email addresses (e.g. yourname@imsnoida.com) are allowed.');
       return;
     }
 
