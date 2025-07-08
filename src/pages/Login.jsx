@@ -63,7 +63,7 @@ export default function Login() {
         <input
           type="email"
           name="email"
-          placeholder="Email (must end with @ims.com)"
+          placeholder="Email (must end with @imsnoida.com)"
           value={form.email}
           onChange={handleChange}
           className="w-full p-2 border rounded-xl"
