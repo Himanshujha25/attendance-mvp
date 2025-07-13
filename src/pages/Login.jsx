@@ -1,6 +1,8 @@
 // src/pages/Login.jsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { loginUser } from '../api/auth';
+import { toast } from 'react-toastify';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -9,42 +11,56 @@ export default function Login() {
     password: '',
   });
 
+
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const { email, password } = form;
 
-    const { email, password } = form;
+  // Validate IMS Email
+  if (!email.endsWith('@imsnoida.com')) {
+    setError('❌ Only IMS email addresses (e.g. yourname@imsnoida.com) are allowed.');
+    return;
+  }
 
-    // ✅ Validate IMS Email
-    if (!email.endsWith('@imsnoida.com')) {
-      setError('❌ Only IMS email addresses (e.g. yourname@imsnoida.com) are allowed.');
-      return;
-    }
+  // Validate Password
+  if (password.length < 8) {
+    setError('❌ Password must be at least 8 characters long.');
+    return;
+  }
 
-    // ✅ Validate Password
-    if (password.length < 8) {
-      setError('❌ Password must be at least 8 characters long.');
-      return;
-    }
+  setError('');
+  try {
+    const response = await loginUser(form);
 
-    setError('');
+    toast.success(`✅ ${response.message || "Login successful"}`);
 
-    // Simulate login
-    const fakeUser = { role: 'student' }; // Replace with backend response
+    const { token, user } = response;
 
-    console.log('Logging in:', form);
+    // Store token and user in localStorage
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
 
-    if (fakeUser.role === 'admin') {
+    // Redirect based on role
+    if (user.role === 'admin') {
       navigate('/admin/dashboard');
-    } else {
+    } else if (user.role === 'student') {
       navigate('/student/dashboard');
+    } else {
+      toast.error("❌ Unknown role");
     }
-  };
+
+  } catch (err) {
+    toast.error(`❌ ${err.response?.data?.message || err.message || "Login failed"}`);
+  }
+};
+
+
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#002147] to-[#004080] p-4">

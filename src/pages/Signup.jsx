@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify'; // ✅ Add this line
+import { toast } from 'react-toastify';
+import { registerUser } from '../api/auth'; // ✅ API function
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -41,12 +42,16 @@ export default function Signup() {
       return;
     }
 
-    toast.success(`✅ Welcome ${form.name}! Registered as ${form.role.toUpperCase()}`);
+    try {
+      const response = await registerUser(form);
+      toast.success(`✅ ${response.message || "Registered successfully"}`);
 
-  const encodedName = encodeURIComponent(form.name);
-  const encodedRole = encodeURIComponent(form.role);
-
-  navigate(`/login?name=${encodedName}&role=${encodedRole}`);
+      const encodedName = encodeURIComponent(form.name);
+      const encodedRole = encodeURIComponent(form.role);
+      navigate(`/?name=${encodedName}&role=${encodedRole}`);
+    } catch (err) {
+      toast.error(`❌ ${err.message || "Registration failed"}`);
+    }
   };
 
   return (
@@ -103,18 +108,14 @@ export default function Signup() {
         </select>
 
         {form.role === "admin" && (
-          <>
-            <input
-              type="text"
-              name="adminCode"
-              placeholder="Enter Admin Code"
-              value={form.adminCode}
-              onChange={handleChange}
-              className={`w-full p-2 border rounded-xl ${
-                adminCodeError ? 'border-red-500' : ''
-              }`}
-            />
-          </>
+          <input
+            type="text"
+            name="adminCode"
+            placeholder="Enter Admin Code"
+            value={form.adminCode}
+            onChange={handleChange}
+            className={`w-full p-2 border rounded-xl ${adminCodeError ? 'border-red-500' : ''}`}
+          />
         )}
 
         <button

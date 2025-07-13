@@ -21,8 +21,8 @@ export default function Sidebar({ onTabChange }) {
       <div className="p-4 border-t border-blue-900">
         <button
           onClick={() => {
-            localStorage.removeItem('user');
-            window.location.href = "/login";
+            localStorage.clear();
+            window.location.href = "/";
           }}
           className="w-full py-2 bg-red-600 rounded-xl hover:bg-red-700"
         >
