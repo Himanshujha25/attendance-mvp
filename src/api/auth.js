@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:5000/api/auth"; // change if deployed
+const BASE_URL = "https://attendance-mvp-1.onrender.com/api/auth"; // change if deployed
 
 export const registerUser = async (formData) => {
   try {

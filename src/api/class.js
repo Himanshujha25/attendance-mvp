@@ -1,5 +1,5 @@
 import axios from "axios";
-const BASE_URL = "http://localhost:5000/api/class"; 
+const BASE_URL = "https://attendance-mvp-1.onrender.com/api/class"; 
 
 export const createClass = async (data, token) => {
   const res = await axios.post(`${BASE_URL}/create`, data, {

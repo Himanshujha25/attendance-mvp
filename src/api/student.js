@@ -1,7 +1,7 @@
 // src/api/student.js
 import axios from "axios";
 
-const BASE = "http://localhost:5000/api";
+const BASE = "https://attendance-mvp-1.onrender.com/api";
 
 export const joinClass = async (code, token) => {
   const res = await axios.post(`${BASE}/enroll/join`, { code }, {
