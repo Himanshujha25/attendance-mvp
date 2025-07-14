@@ -40,7 +40,7 @@ export default function GenerateCode() {
       setLoading(true);
 
       const res = await axios.post(
-        'http://localhost:5000/api/attendance/generate',
+        'https://attendance-mvp-1.onrender.com/api/attendance/generate',
         {
           subject: selectedClass.subject,
           code: selectedClass.code,
