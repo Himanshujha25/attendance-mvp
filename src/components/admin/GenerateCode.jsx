@@ -18,7 +18,7 @@ export default function GenerateCode() {
   // 👉 Fetch classes created by this teacher
   const fetchClasses = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/class/all", {
+      const res = await axios.get("https://attendance-mvp-1.onrender.com/api/class/all", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
