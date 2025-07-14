@@ -10,7 +10,7 @@ export default function Login() {
     email: '',
     password: '',
   });
-
+const [loading, setLoading] = useState(false);
 
   const [error, setError] = useState('');
 
@@ -19,34 +19,32 @@ export default function Login() {
   };
 const handleSubmit = async (e) => {
   e.preventDefault();
+  setError('');
+  setLoading(true); // ⏳ Start loading
 
   const { email, password } = form;
 
-  // Validate IMS Email
   if (!email.endsWith('@imsnoida.com')) {
     setError('❌ Only IMS email addresses (e.g. yourname@imsnoida.com) are allowed.');
+    setLoading(false);
     return;
   }
 
-  // Validate Password
   if (password.length < 8) {
     setError('❌ Password must be at least 8 characters long.');
+    setLoading(false);
     return;
   }
 
-  setError('');
   try {
     const response = await loginUser(form);
-
     toast.success(`✅ ${response.message || "Login successful"}`);
 
     const { token, user } = response;
-
-    // Store token and user in localStorage
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(user));
 
-    // Redirect based on role
+    // ✅ Redirect based on role
     if (user.role === 'admin') {
       navigate('/admin/dashboard');
     } else if (user.role === 'student') {
@@ -57,9 +55,10 @@ const handleSubmit = async (e) => {
 
   } catch (err) {
     toast.error(`❌ ${err.response?.data?.message || err.message || "Login failed"}`);
+  } finally {
+    setLoading(false); // ✅ Stop loading
   }
 };
-
 
 
   return (
@@ -98,12 +97,14 @@ const handleSubmit = async (e) => {
 
         {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
-        <button
-          type="submit"
-          className="w-full bg-[#002147] text-white py-2 rounded-xl hover:bg-[#003366] transition"
-        >
-          Login
-        </button>
+       <button
+  type="submit"
+  className="w-full bg-[#002147] text-white py-2 rounded-xl hover:bg-[#003366] transition flex items-center justify-center"
+  disabled={loading}
+>
+  {loading ? 'Logging in...' : 'Login'}
+</button>
+
 
         <p className="text-center text-sm mt-2">
           Don’t have an account?{' '}

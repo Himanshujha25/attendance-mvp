@@ -24,7 +24,7 @@ export default function AdminSidebar() {
           <NavLink to="/admin/classes" className="block hover:text-blue-300">
             🏫 Manage Classes
           </NavLink>
-          <NavLink to="/admin/add-class" className="block hover:text-blue-300">
+          <NavLink to="/admin/addclass" className="block hover:text-blue-300">
             ➕ Add New Class
           </NavLink>
           <NavLink to="/admin/generate-code" className="block hover:text-blue-300">

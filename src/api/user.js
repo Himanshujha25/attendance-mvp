@@ -2,7 +2,7 @@
 import axios from "axios";
 
 export const updateUserProfile = async (data, token) => {
-   const BASE_URL = "https://attendance-mvp-1.onrender.com/api/auth"; // change if deployed
+   const BASE_URL = "http://localhost:5000/api/auth"; // change if deployed
                          
   const res = await axios.put(`${BASE_URL}/profile`, data, {
     headers: {

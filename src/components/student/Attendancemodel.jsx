@@ -11,7 +11,7 @@ export default function AttendanceModal({ showModal, onClose, onSubmit, attendan
           value={attendanceCodeInput}
           onChange={(e) => setAttendanceCodeInput(e.target.value)}
           placeholder="Enter today's code"
-          className="w-full p-2 border rounded-xl mb-4"
+          className="w-full p-2 border rounded-xl mb-4 text-black text-2xl"
         />
         <div className="flex justify-between">
           <button

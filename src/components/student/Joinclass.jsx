@@ -1,35 +1,32 @@
 // src/components/student/JoinClass.jsx
+import { useState } from 'react';
 import { toast } from 'react-toastify';
+import { joinClass, getStudentClasses } from '../../api/student';
 
-const dummyClassCodes = {
-  ECO2025: "Mr. Sharma",
-  MATH101: "Ms. Verma",
-  CS1101: "Dr. Gupta",
-};
+export default function JoinClass({ setJoinedClasses }) {
+  const [code, setCode] = useState('');
+  const token = localStorage.getItem("token");
 
-export default function JoinClass({ code, setCode, joinedClasses, setJoinedClasses }) {
- const handleJoinClass = () => {
-  const upperCode = code.trim().toUpperCase();
+  const handleJoinClass = async () => {
+    const trimmedCode = code.trim().toUpperCase();
 
-  if (!dummyClassCodes[upperCode]) {
-    return toast.error("Invalid class code");
-  }
+    if (!trimmedCode || trimmedCode.length !== 6) {
+      toast.error("❌ Please enter a valid 6-character class code");
+      return;
+    }
 
-  if (joinedClasses.some(cls => cls.code === upperCode)) {
-    return toast.warning("Already joined this class");
-  }
+    try {
+      await joinClass(trimmedCode, token);
+      toast.success("✅ Class joined successfully");
 
-  const updated = [
-    ...joinedClasses,
-    { code: upperCode, teacher: dummyClassCodes[upperCode], attendanceMarked: false }
-  ];
-
-  setJoinedClasses(updated);
-  localStorage.setItem("joinedClasses", JSON.stringify(updated)); // Save it
-  toast.success("Class joined");
-  setCode('');
-};
-
+      // Refresh class list
+      const res = await getStudentClasses(token);
+      setJoinedClasses(res);
+      setCode('');
+    } catch (err) {
+      toast.error(`❌ ${err.response?.data?.message || "Failed to join class"}`);
+    }
+  };
 
   return (
     <div className="bg-white text-black w-full max-w-md p-6 rounded-2xl shadow-lg">

@@ -57,3 +57,39 @@ exports.leaveClass = async (req, res) => {
     res.status(500).json({ message: "❌ Error while leaving class", error: error.message });
   }
 };
+
+exports.getStudentClasses = async (req, res) => {
+  try {
+    const studentId = req.user.id;
+
+    // Find all classes the student has joined
+    const joined = await Enrollment.find({ studentId });
+
+    // For each joined class, fetch class details
+    const formatted = await Promise.all(
+      joined.map(async (entry) => {
+        const cls = await ClassCode.findOne({ code: entry.classCode });
+
+        if (!cls) return null;
+
+        return {
+          _id: entry._id,
+          subject: cls.subject,
+          code: cls.code,
+          teacher: cls.teacher,
+          classId: cls._id,
+          joinedAt: entry.joinedAt,
+        };
+      })
+    );
+
+    const filtered = formatted.filter((f) => f !== null); // remove nulls
+
+    res.status(200).json(filtered);
+  } catch (err) {
+    res.status(500).json({
+      message: "❌ Failed to fetch joined classes",
+      error: err.message,
+    });
+  }
+};

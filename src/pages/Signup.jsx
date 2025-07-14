@@ -12,6 +12,7 @@ export default function Signup() {
     role: 'student',
     adminCode: '',
   });
+const [loading, setLoading] = useState(false);
 
   const [emailValid, setEmailValid] = useState(true);
   const [adminCodeError, setAdminCodeError] = useState(false);
@@ -25,34 +26,37 @@ export default function Signup() {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setEmailValid(true);
-    setAdminCodeError(false);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setEmailValid(true);
+  setAdminCodeError(false);
+  setLoading(true); // Start loading
 
-    if (!form.email.endsWith("@imsnoida.com")) {
-      setEmailValid(false);
-      toast.error("❌ Please use your college email (@imsnoida.com)");
-      return;
-    }
+  if (!form.email.endsWith("@imsnoida.com")) {
+    setEmailValid(false);
+    toast.error("❌ Please use your college email (@imsnoida.com)");
+    setLoading(false);
+    return;
+  }
 
-    if (form.role === "admin" && form.adminCode !== "IMS2025ADMIN") {
-      setAdminCodeError(true);
-      toast.error("❌ Invalid Admin Code");
-      return;
-    }
+  if (form.role === "admin" && form.adminCode !== "IMS2025ADMIN") {
+    setAdminCodeError(true);
+    toast.error("❌ Invalid Admin Code");
+    setLoading(false);
+    return;
+  }
 
-    try {
-      const response = await registerUser(form);
-      toast.success(`✅ ${response.message || "Registered successfully"}`);
+  try {
+    const response = await registerUser(form);
+    toast.success(`✅ ${response.message || "Registered successfully"}`);
+    navigate(`/?name=${encodeURIComponent(form.name)}&role=${encodeURIComponent(form.role)}`);
+  } catch (err) {
+    toast.error(`❌ ${err.message || "Registration failed"}`);
+  } finally {
+    setLoading(false); // ✅ Stop loading
+  }
+};
 
-      const encodedName = encodeURIComponent(form.name);
-      const encodedRole = encodeURIComponent(form.role);
-      navigate(`/?name=${encodedName}&role=${encodedRole}`);
-    } catch (err) {
-      toast.error(`❌ ${err.message || "Registration failed"}`);
-    }
-  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#002147] to-[#004080] p-4">
@@ -118,12 +122,14 @@ export default function Signup() {
           />
         )}
 
-        <button
-          type="submit"
-          className="w-full bg-[#002147] text-white py-2 rounded-xl hover:bg-[#003366]"
-        >
-          Sign Up
-        </button>
+      <button
+  type="submit"
+  className="w-full bg-[#002147] text-white py-2 rounded-xl hover:bg-[#003366] transition flex items-center justify-center"
+  disabled={loading}
+>
+  {loading ? 'Signing up...' : 'Sign Up'}
+</button>
+
 
         <p className="text-center text-sm mt-2">
           Already registered?{' '}

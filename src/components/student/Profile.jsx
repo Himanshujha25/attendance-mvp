@@ -41,7 +41,7 @@ export default function Profile({ user, setUser }) {
     <div className="bg-white text-black p-6 rounded-xl w-full max-w-xl shadow-lg">
       <h2 className="text-2xl font-bold mb-4 text-center">👤 Student Profile</h2>
 
-      <label className="text-sm font-medium text-gray-700">Email (read-only)</label>
+      <label className="text-sm font-medium text-gray-700">Email </label>
       <input
         type="email"
         name="email"
