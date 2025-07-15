@@ -6,6 +6,7 @@ import Student_home from './pages/Student_home';
 import Addclass from './components/admin/Addclass';
 import Mangeclass from './components/admin/Mangeclass';
 import GenerateCode from './components/admin/GenerateCode';
+import Reports from './components/admin/Reports'
 import Admin_user from './pages/AdminDashboard';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -22,6 +23,7 @@ function App() {
           <Route path='/admin/addclass' element={<Addclass />} />
           <Route path='/admin/classes' element={<Mangeclass/>}/>
          <Route path="/admin/generate-code" element={<GenerateCode />} />
+         <Route path="/admin/reports" element={<Reports/>}/>
 
       </Routes>
       <ToastContainer position="top-center" autoClose={3000} />

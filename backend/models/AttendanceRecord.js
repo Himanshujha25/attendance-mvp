@@ -18,6 +18,11 @@ const attendanceRecordSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  studentId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'User',
+}
+
 });
 
 module.exports = mongoose.model("AttendanceRecord", attendanceRecordSchema);

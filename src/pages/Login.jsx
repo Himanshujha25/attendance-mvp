@@ -1,4 +1,3 @@
-// src/pages/Login.jsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loginUser } from '../api/auth';
@@ -6,64 +5,57 @@ import { toast } from 'react-toastify';
 
 export default function Login() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({
-    email: '',
-    password: '',
-  });
-const [loading, setLoading] = useState(false);
-
+  const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError('');
-  setLoading(true); // ⏳ Start loading
 
-  const { email, password } = form;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
 
-  if (!email.endsWith('@imsnoida.com')) {
-    setError('❌ Only IMS email addresses (e.g. yourname@imsnoida.com) are allowed.');
-    setLoading(false);
-    return;
-  }
+    const { email, password } = form;
 
-  if (password.length < 8) {
-    setError('❌ Password must be at least 8 characters long.');
-    setLoading(false);
-    return;
-  }
-
-  try {
-    const response = await loginUser(form);
-    toast.success(`✅ ${response.message || "Login successful"}`);
-
-    const { token, user } = response;
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
-
-    // ✅ Redirect based on role
-    if (user.role === 'admin') {
-      navigate('/admin/dashboard');
-    } else if (user.role === 'student') {
-      navigate('/student/dashboard');
-    } else {
-      toast.error("❌ Unknown role");
+    if (!email.endsWith('@imsnoida.com')) {
+      setError('❌ Only IMS email addresses (e.g. yourname@imsnoida.com) are allowed.');
+      setLoading(false);
+      return;
     }
 
-  } catch (err) {
-    toast.error(`❌ ${err.response?.data?.message || err.message || "Login failed"}`);
-  } finally {
-    setLoading(false); // ✅ Stop loading
-  }
-};
+    if (password.length < 8) {
+      setError('❌ Password must be at least 8 characters long.');
+      setLoading(false);
+      return;
+    }
 
+    try {
+      const response = await loginUser(form);
+      toast.success(`✅ ${response.message || "Login successful"}`);
+
+      const { token, user } = response;
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+
+      if (user.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else if (user.role === 'student') {
+        navigate('/student/dashboard');
+      } else {
+        toast.error("❌ Unknown role");
+      }
+    } catch (err) {
+      toast.error(`❌ ${err.response?.data?.message || err.message || "Login failed"}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#002147] to-[#004080] p-4">
-      {/* Branding */}
       <div className="mb-6 text-center">
         <h1 className="text-3xl font-bold text-white">IMS Noida</h1>
         <p className="text-gray-300 text-lg">Attendance Management Portal</p>
@@ -97,14 +89,13 @@ const handleSubmit = async (e) => {
 
         {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
-       <button
-  type="submit"
-  className="w-full bg-[#002147] text-white py-2 rounded-xl hover:bg-[#003366] transition flex items-center justify-center"
-  disabled={loading}
->
-  {loading ? 'Logging in...' : 'Login'}
-</button>
-
+        <button
+          type="submit"
+          className="w-full bg-[#002147] text-white py-2 rounded-xl hover:bg-[#003366] transition flex items-center justify-center"
+          disabled={loading}
+        >
+          {loading ? 'Logging in...' : 'Login'}
+        </button>
 
         <p className="text-center text-sm mt-2">
           Don’t have an account?{' '}

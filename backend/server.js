@@ -16,7 +16,7 @@ const authRoutes = require("./routes/authRoutes");
 const classroute=require("./routes/classRoutes")
 const enrollmentRoutes = require("./routes/enrollmentRoutes");
 const attendanceRoutes=require("./routes/attendanceRoutes")
-
+const pdfRoutes = require("./routes/pdfRoutes"); 
 
 
 // Use Routes
@@ -24,8 +24,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/class",classroute)
 app.use("/api/enroll", enrollmentRoutes);
 app.use("/api/attendance",attendanceRoutes)
-
-
+app.use("/api/admin", pdfRoutes);
 
 // Connect to DB
 mongoose.connect(process.env.MONGO_URI)

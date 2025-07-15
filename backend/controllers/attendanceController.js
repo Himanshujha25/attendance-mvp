@@ -1,7 +1,7 @@
 const AttendanceCode = require("../models/Attendance");
 const AttendanceRecord = require("../models/AttendanceRecord"); // ✅ this stores attendance records
 const ClassCode = require("../models/Class");
-
+const User =require("../models/User")
 
 
 function generateCode() {
@@ -118,3 +118,43 @@ exports.checkAttendance = async (req, res) => {
     res.status(500).json({ message: "❌ Error checking attendance", error: err.message });
   }
 };
+// Get all dates on which attendance was marked
+exports.getAllAttendanceDates = async (req, res) => {
+  try {
+    const dates = await AttendanceRecord.find().distinct("date");
+    res.status(200).json(dates);
+  } catch (error) {
+    res.status(500).json({
+      message: "❌ Failed to fetch attendance dates",
+      error: error.message,
+    });
+  }
+};
+
+exports.getAttendanceByDate = async (req, res) => {
+  try {
+    const { date } = req.query;
+
+    if (!date) {
+      return res.status(400).json({ message: "❌ Date is required" });
+    }
+
+    // Get all attendance records for the given date
+    const records = await AttendanceRecord.find({ date }).populate("studentId", "name email");
+
+    const response = records.map((record) => ({
+      name: record.studentId.name,
+      email: record.studentId.email,
+      classId: record.classId,
+      time: record.time,
+    }));
+
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(500).json({
+      message: "❌ Failed to fetch attendance for date",
+      error: error.message,
+    });
+  }
+};
+

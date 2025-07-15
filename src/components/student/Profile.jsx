@@ -31,57 +31,72 @@ export default function Profile({ user, setUser }) {
       const res = await updateUserProfile(form, token);
       setUser(res.user);
       localStorage.setItem("user", JSON.stringify(res.user));
-      toast.success("✅ Profile updated successfully");
+      toast.success(" Profile updated successfully");
     } catch (err) {
       toast.error("❌ Failed to update profile");
     }
   };
 
   return (
-    <div className="bg-white text-black p-6 rounded-xl w-full max-w-xl shadow-lg">
-      <h2 className="text-2xl font-bold mb-4 text-center">👤 Student Profile</h2>
+    <div className="w-full max-w-xl mx-auto bg-white rounded-xl shadow-md px-6 py-10 text-black">
+      <h2 className="text-2xl font-semibold text-center text-[#002147] mb-4">👤 Student Profile</h2>
 
-      <label className="text-sm font-medium text-gray-700">Email </label>
-      <input
-        type="email"
-        name="email"
-        value={form.email}
-        disabled
-        className="w-full p-2 border rounded mb-3 bg-gray-100 text-gray-600 cursor-not-allowed"
-      />
+      <div className="space-y-3">
+        {/* Email */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Email</label>
+          <input
+            type="email"
+            name="email"
+            value={form.email}
+            disabled
+            className="w-full px-3 py-2 border bg-gray-100 text-gray-500 rounded-md text-sm"
+          />
+        </div>
 
-      <label className="text-sm font-medium text-gray-700">Full Name</label>
-      <input
-        type="text"
-        name="name"
-        value={form.name}
-        onChange={handleChange}
-        className="w-full p-2 border rounded mb-3"
-      />
+        {/* Name */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Full Name</label>
+          <input
+            type="text"
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#002147]"
+          />
+        </div>
 
-      <label className="text-sm font-medium text-gray-700">Roll Number</label>
-      <input
-        type="text"
-        name="rollno"
-        value={form.rollno}
-        onChange={handleChange}
-        className="w-full p-2 border rounded mb-3"
-      />
+        {/* Roll Number */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Roll Number</label>
+          <input
+            type="text"
+            name="rollno"
+            value={form.rollno}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#002147]"
+          />
+        </div>
 
-      <label className="text-sm font-medium text-gray-700">Date of Birth</label>
-      <input
-        type="date"
-        name="dob"
-        value={form.dob}
-        onChange={handleChange}
-        className="w-full p-2 border rounded mb-3"
-      />
+        {/* Date of Birth */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
+          <input
+            type="date"
+            name="dob"
+            value={form.dob}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#002147]"
+          />
+        </div>
+      </div>
 
+      {/* Save Button */}
       <button
         onClick={handleSubmit}
-        className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+        className="mt-5 w-full bg-[#002147] text-white py-2 rounded-md text-sm font-medium hover:bg-[#003366] transition"
       >
-        💾 Save Profile
+        💾 Save Changes
       </button>
     </div>
   );

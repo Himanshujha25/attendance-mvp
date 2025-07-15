@@ -1,30 +1,40 @@
 // src/components/student/AttendanceModal.jsx
-export default function AttendanceModal({ showModal, onClose, onSubmit, attendanceCodeInput, setAttendanceCodeInput }) {
+export default function AttendanceModal({
+  showModal,
+  onClose,
+  onSubmit,
+  attendanceCodeInput,
+  setAttendanceCodeInput
+}) {
   if (!showModal) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-xl w-80 text-black">
-        <h3 className="text-lg font-bold mb-4 text-center">🔐 Attendance Code</h3>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+      <div className="bg-white w-full max-w-sm sm:max-w-md p-6 rounded-2xl shadow-xl text-black">
+        <h3 className="text-xl font-semibold text-center mb-4 text-[#002147]">
+          🔐 Enter Attendance Code
+        </h3>
+
         <input
           type="text"
           value={attendanceCodeInput}
           onChange={(e) => setAttendanceCodeInput(e.target.value)}
           placeholder="Enter today's code"
-          className="w-full p-2 border rounded-xl mb-4 text-black text-2xl"
+          className="w-full p-3 border border-gray-300 rounded-xl mb-5 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        <div className="flex justify-between">
+
+        <div className="flex flex-col sm:flex-row justify-between gap-4">
           <button
             onClick={onClose}
-            className="bg-gray-300 px-4 py-2 rounded-xl hover:bg-gray-400"
+            className="w-full sm:w-1/2 bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 rounded-xl transition-all"
           >
-            Cancel
+            ❌ Cancel
           </button>
           <button
             onClick={onSubmit}
-            className="bg-[#002147] text-white px-4 py-2 rounded-xl hover:bg-[#003366]"
+            className="w-full sm:w-1/2 bg-[#002147] hover:bg-[#003366] text-white py-2 rounded-xl transition-all"
           >
-            Submit
+            ✅ Submit
           </button>
         </div>
       </div>

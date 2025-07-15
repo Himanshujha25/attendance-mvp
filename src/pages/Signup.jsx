@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { registerUser } from '../api/auth'; // ✅ API function
+import { registerUser } from '../api/auth';
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -12,8 +12,7 @@ export default function Signup() {
     role: 'student',
     adminCode: '',
   });
-const [loading, setLoading] = useState(false);
-
+  const [loading, setLoading] = useState(false);
   const [emailValid, setEmailValid] = useState(true);
   const [adminCodeError, setAdminCodeError] = useState(false);
 
@@ -26,37 +25,36 @@ const [loading, setLoading] = useState(false);
     }
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setEmailValid(true);
-  setAdminCodeError(false);
-  setLoading(true); // Start loading
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setEmailValid(true);
+    setAdminCodeError(false);
+    setLoading(true);
 
-  if (!form.email.endsWith("@imsnoida.com")) {
-    setEmailValid(false);
-    toast.error("❌ Please use your college email (@imsnoida.com)");
-    setLoading(false);
-    return;
-  }
+    if (!form.email.endsWith("@imsnoida.com")) {
+      setEmailValid(false);
+      toast.error("❌ Please use your college email (@imsnoida.com)");
+      setLoading(false);
+      return;
+    }
 
-  if (form.role === "admin" && form.adminCode !== "IMS2025ADMIN") {
-    setAdminCodeError(true);
-    toast.error("❌ Invalid Admin Code");
-    setLoading(false);
-    return;
-  }
+    if (form.role === "admin" && form.adminCode !== "IMS2025ADMIN") {
+      setAdminCodeError(true);
+      toast.error("❌ Invalid Admin Code");
+      setLoading(false);
+      return;
+    }
 
-  try {
-    const response = await registerUser(form);
-    toast.success(`✅ ${response.message || "Registered successfully"}`);
-    navigate(`/?name=${encodeURIComponent(form.name)}&role=${encodeURIComponent(form.role)}`);
-  } catch (err) {
-    toast.error(`❌ ${err.message || "Registration failed"}`);
-  } finally {
-    setLoading(false); // ✅ Stop loading
-  }
-};
-
+    try {
+      const response = await registerUser(form);
+      toast.success(`✅ ${response.message || "Registered successfully"}`);
+      navigate(`/?name=${encodeURIComponent(form.name)}&role=${encodeURIComponent(form.role)}`);
+    } catch (err) {
+      toast.error(`❌ ${err.response?.data?.message || err.message || "Registration failed"}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#002147] to-[#004080] p-4">
@@ -122,20 +120,19 @@ const handleSubmit = async (e) => {
           />
         )}
 
-      <button
-  type="submit"
-  className="w-full bg-[#002147] text-white py-2 rounded-xl hover:bg-[#003366] transition flex items-center justify-center"
-  disabled={loading}
->
-  {loading ? 'Signing up...' : 'Sign Up'}
-</button>
-
+        <button
+          type="submit"
+          className="w-full bg-[#002147] text-white py-2 rounded-xl hover:bg-[#003366] transition flex items-center justify-center"
+          disabled={loading}
+        >
+          {loading ? 'Signing up...' : 'Sign Up'}
+        </button>
 
         <p className="text-center text-sm mt-2">
           Already registered?{' '}
           <span
             className="text-blue-500 cursor-pointer underline"
-            onClick={() => navigate('/login')}
+            onClick={() => navigate('/')}
           >
             Login here
           </span>
