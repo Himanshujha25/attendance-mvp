@@ -1,111 +1,107 @@
 const AttendanceCode = require("../models/Attendance");
-const AttendanceRecord = require("../models/AttendanceRecord"); // ✅ this stores attendance records
+const AttendanceRecord = require("../models/AttendanceRecord");
 const ClassCode = require("../models/Class");
-const User =require("../models/User")
+const User = require("../models/User");
+const moment = require("moment-timezone"); // ✅ install this if not already
 
-
+// Generate a random 6-character code
 function generateCode() {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
+// ✅ Generate an attendance code for a class
 exports.createAttendanceCode = async (req, res) => {
   try {
-    const { code } = req.body; // class code, e.g., "MTH101"
+    const { code } = req.body;
 
-    if (!code) {
+    if (!code)
       return res.status(400).json({ message: "❌ Class code is required" });
-    }
 
-    // 🔍 Find class by its unique code
     const classData = await ClassCode.findOne({ code: code.toUpperCase() });
 
-    if (!classData) {
-      return res.status(404).json({ message: "❌ Class not found with this code" });
-    }
+    if (!classData)
+      return res.status(404).json({ message: "❌ Class not found" });
 
     const attendanceCode = generateCode();
-    const now = new Date();
-    const expiresAt = new Date(now.getTime() + 2 * 60 * 1000); // valid for 2 mins
+    const now = moment().tz("Asia/Kolkata");
+    const expiresAt = now.clone().add(2, "minutes").toDate();
 
     const newCode = await AttendanceCode.create({
       classId: classData._id,
       code: attendanceCode,
-      date: now.toISOString().split("T")[0],
-      time: now.toTimeString().split(" ")[0],
+      date: now.format("YYYY-MM-DD"),
+      time: now.format("HH:mm:ss"),
       expiresAt,
     });
 
     res.status(201).json({
-      message: "✅ Attendance code generated",
+      message: "✅ Code generated",
       code: newCode.code,
       expiresAt: newCode.expiresAt,
+      subject: classData.subject,
     });
   } catch (error) {
     res.status(500).json({
-      message: "❌ Failed to generate attendance code",
+      message: "❌ Failed to generate code",
       error: error.message,
     });
   }
 };
 
-
+// ✅ Verify and mark attendance
 exports.verifyAttendanceCode = async (req, res) => {
   try {
     const { code } = req.body;
     const studentId = req.user.id;
+
     const attendanceCode = await AttendanceCode.findOne({ code: code.toUpperCase() });
-    console.log("Attendance Code Record:", attendanceCode);
 
-    if (!attendanceCode) {
+    if (!attendanceCode)
       return res.status(404).json({ message: "❌ Invalid code" });
-    }
 
-    if (new Date() > attendanceCode.expiresAt) {
+    if (new Date() > attendanceCode.expiresAt)
       return res.status(400).json({ message: "⏰ Code has expired" });
-    }
 
-    const today = new Date().toISOString().split("T")[0];
+    const now = moment().tz("Asia/Kolkata");
+    const today = now.format("YYYY-MM-DD");
 
-    // Check if already marked for the same class and day
+    // Check if already marked
     const alreadyMarked = await AttendanceRecord.findOne({
       studentId,
       classId: attendanceCode.classId,
       date: today,
     });
 
-    if (alreadyMarked) {
-      return res.status(400).json({ message: "⚠️ Attendance already marked today" });
-    }
+    if (alreadyMarked)
+      return res.status(400).json({ message: "⚠️ Attendance already marked for this class today" });
 
-    // ✅ Mark attendance
-    await AttendanceRecord.create({
+    // ✅ Save attendance
+    const newRecord = await AttendanceRecord.create({
       studentId,
       classId: attendanceCode.classId,
       date: today,
-      time: new Date().toTimeString().split(" ")[0],
+      time: now.format("HH:mm:ss"),
     });
 
-    // 🎯 Get class info
     const classDetails = await ClassCode.findById(attendanceCode.classId);
 
     res.status(200).json({
       message: "✅ Attendance marked successfully",
       subject: classDetails.subject,
       teacher: classDetails.teacher,
-      time: new Date().toLocaleTimeString(),
+      time: newRecord.time,
     });
   } catch (err) {
-    res.status(500).json({ message: "❌ Failed to verify code", error: err.message });
+    res.status(500).json({ message: "❌ Server error", error: err.message });
   }
 };
 
-// controllers/attendanceController.js
-
+// ✅ Check if student has already marked attendance
 exports.checkAttendance = async (req, res) => {
   try {
     const { classId } = req.params;
     const studentId = req.user.id;
-    const today = new Date().toISOString().split("T")[0];
+    const today = moment().tz("Asia/Kolkata").format("YYYY-MM-DD");
 
     const alreadyMarked = await AttendanceRecord.findOne({
       classId,
@@ -114,11 +110,13 @@ exports.checkAttendance = async (req, res) => {
     });
 
     res.status(200).json({ marked: !!alreadyMarked });
+
   } catch (err) {
     res.status(500).json({ message: "❌ Error checking attendance", error: err.message });
   }
 };
-// Get all dates on which attendance was marked
+
+// ✅ Get all attendance dates
 exports.getAllAttendanceDates = async (req, res) => {
   try {
     const dates = await AttendanceRecord.find().distinct("date");
@@ -131,21 +129,30 @@ exports.getAllAttendanceDates = async (req, res) => {
   }
 };
 
+// ✅ Get attendance by date with optional subject filtering
 exports.getAttendanceByDate = async (req, res) => {
   try {
-    const { date } = req.query;
+    const { date, subject } = req.query;
 
     if (!date) {
       return res.status(400).json({ message: "❌ Date is required" });
     }
 
-    // Get all attendance records for the given date
-    const records = await AttendanceRecord.find({ date }).populate("studentId", "name email");
+    // Load all records for that date
+    const records = await AttendanceRecord.find({ date })
+      .populate("studentId", "name email")
+      .populate("classId", "subject code");
 
-    const response = records.map((record) => ({
-      name: record.studentId.name,
-      email: record.studentId.email,
-      classId: record.classId,
+    // Filter by subject if needed
+    const filteredRecords = subject
+      ? records.filter((record) => record.classId?.subject === subject)
+      : records;
+
+    const response = filteredRecords.map((record) => ({
+      name: record.studentId?.name,
+      email: record.studentId?.email,
+      subject: record.classId?.subject || "Unknown",
+      classCode: record.classId?.code || "N/A",
       time: record.time,
     }));
 
@@ -157,4 +164,3 @@ exports.getAttendanceByDate = async (req, res) => {
     });
   }
 };
-

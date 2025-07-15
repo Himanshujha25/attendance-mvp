@@ -6,6 +6,8 @@ import TopBar from '../admin/TopBar';
 export default function Reports() {
   const [dates, setDates] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
+  const [availableSubjects, setAvailableSubjects] = useState([]);
+  const [selectedSubject, setSelectedSubject] = useState("");
   const [attendanceData, setAttendanceData] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -15,11 +17,14 @@ export default function Reports() {
   useEffect(() => {
     const fetchDates = async () => {
       try {
-        const response = await axios.get("https://attendance-mvp-1.onrender.com/api/attendance/attendance-dates", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await axios.get(
+          "https://attendance-mvp-1.onrender.com/api/attendance/attendance-dates",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         setDates(response.data);
       } catch (error) {
         console.error("Error fetching dates:", error);
@@ -31,10 +36,35 @@ export default function Reports() {
 
   const fetchAttendanceByDate = async (date) => {
     setSelectedDate(date);
+    setSelectedSubject("");
+    setAttendanceData([]);
     setLoading(true);
     try {
       const response = await axios.get(
         `https://attendance-mvp-1.onrender.com/api/attendance/attendances?date=${date}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // extract subjects available for this date
+      const subjects = [...new Set(response.data.map((item) => item.subject))];
+      setAvailableSubjects(subjects);
+    } catch (error) {
+      console.error("Error fetching attendance:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchSubjectAttendance = async (subject) => {
+    setSelectedSubject(subject);
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `https://attendance-mvp-1.onrender.com/api/attendance/attendances?date=${selectedDate}&subject=${subject}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -52,7 +82,7 @@ export default function Reports() {
   const downloadPDF = async () => {
     try {
       const response = await axios.get(
-        `https://attendance-mvp-1.onrender.com/api/admin/download-pdf?date=${selectedDate}`,
+        `https://attendance-mvp-1.onrender.com/api/admin/download-pdf?date=${selectedDate}&subject=${selectedSubject}`,
         {
           headers: { Authorization: `Bearer ${token}` },
           responseType: "blob",
@@ -62,7 +92,7 @@ export default function Reports() {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `attendance-${selectedDate}.pdf`);
+      link.setAttribute("download", `attendance-${selectedDate}-${selectedSubject}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -74,6 +104,7 @@ export default function Reports() {
   return (
     <div className="flex min-h-screen bg-[#f1f5f9]">
       {/* Sidebar */}
+     
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
@@ -115,41 +146,65 @@ export default function Reports() {
             </div>
           </div>
 
+          {/* Subject selection */}
+          {availableSubjects.length > 0 && (
+            <div className="mb-6">
+              <h2 className="text-md font-semibold text-gray-700 mb-2">Select Subject:</h2>
+              <div className="flex flex-wrap gap-3">
+                {availableSubjects.map((subj, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => fetchSubjectAttendance(subj)}
+                    className={`px-4 py-2 text-sm rounded-md font-medium transition-all ${
+                      selectedSubject === subj
+                        ? "bg-blue-700 text-white"
+                        : "bg-blue-100 hover:bg-blue-600 hover:text-white text-blue-800"
+                    }`}
+                  >
+                    {subj}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Attendance Table */}
-          {selectedDate && (
+          {selectedSubject && (
             <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md mt-6 overflow-auto">
               <h2 className="text-xl font-semibold mb-4 text-gray-800">
-                📌 Attendance on <span className="text-blue-600">{selectedDate}</span>
+                📌 Attendance on{" "}
+                <span className="text-blue-600">{selectedDate}</span> for{" "}
+                <span className="text-blue-600">{selectedSubject}</span>
               </h2>
 
               {loading ? (
                 <p className="text-gray-500">⏳ Loading attendance data...</p>
               ) : attendanceData.length === 0 ? (
-                <p className="text-gray-500">No students found for this date.</p>
+                <p className="text-gray-500">No students found for this date and subject.</p>
               ) : (
                 <>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm sm:text-base border border-gray-300">
-                      <thead className="bg-blue-600 text-white">
-                        <tr>
-                          <th className="p-3 border">S.No</th>
-                          <th className="p-3 border">Name</th>
-                          <th className="p-3 border">Email</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {attendanceData.map((student, idx) => (
-                          <tr
-                            key={idx}
-                            className={idx % 2 === 0 ? "bg-gray-100" : "bg-white"}
-                          >
-                            <td className="p-3 border text-center">{idx + 1}</td>
-                            <td className="p-3 border">{student.name}</td>
-                            <td className="p-3 border">{student.email}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+  <thead className="bg-blue-600 text-white">
+    <tr>
+      <th className="p-3 border">S.No</th>
+      <th className="p-3 border">Name</th>
+      <th className="p-3 border">Email</th>
+      <th className="p-3 border">Subject</th> {/* ✅ Add Subject column */}
+    </tr>
+  </thead>
+  <tbody>
+    {attendanceData.map((student, idx) => (
+      <tr key={idx} className={idx % 2 === 0 ? "bg-gray-100" : "bg-white"}>
+        <td className="p-3 border text-center">{idx + 1}</td>
+        <td className="p-3 border">{student.name}</td>
+        <td className="p-3 border">{student.email}</td>
+        <td className="p-3 border">{student.subject}</td> {/* ✅ Subject shown */}
+      </tr>
+    ))}
+  </tbody>
+</table>
+
                   </div>
 
                   <div className="flex justify-end">
