@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { registerUser } from '../api/auth';
+import axios from 'axios';
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -12,9 +12,14 @@ export default function Signup() {
     role: 'student',
     adminCode: '',
   });
-  const [loading, setLoading] = useState(false);
+
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [otpVerified, setOtpVerified] = useState(false);
+
   const [emailValid, setEmailValid] = useState(true);
   const [adminCodeError, setAdminCodeError] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -25,34 +30,52 @@ export default function Signup() {
     }
   };
 
+  const sendOtp = async () => {
+    if (!form.email.endsWith("@imsnoida.com")) {
+      toast.error(" Use @imsnoida.com email");
+      return;
+    }
+    try {
+      await axios.post("https://attendance-mvp-1.onrender.com/api/auth/send-otp", { email: form.email });
+      toast.success(" OTP sent to email");
+      setOtpSent(true);
+    } catch (err) {
+      toast.error(" Failed to send OTP");
+    }
+  };
+
+  const verifyOtp = async () => {
+    try {
+      const response = await axios.post("https://attendance-mvp-1.onrender.com/api/auth/verify-otp", {
+        email: form.email,
+        otp,
+      });
+      toast.success(" OTP verified!");
+      setOtpVerified(true);
+    } catch (err) {
+      toast.error(" Invalid OTP");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setEmailValid(true);
-    setAdminCodeError(false);
-    setLoading(true);
-
-    if (!form.email.endsWith("@imsnoida.com")) {
-      setEmailValid(false);
-      toast.error("❌ Please use your college email (@imsnoida.com)");
-      setLoading(false);
+    if (!otpVerified) {
+      toast.warning(" Please verify OTP before signing up");
       return;
     }
 
     if (form.role === "admin" && form.adminCode !== "IMS2025ADMIN") {
       setAdminCodeError(true);
-      toast.error("❌ Invalid Admin Code");
-      setLoading(false);
+      toast.error(" Invalid Admin Code");
       return;
     }
 
     try {
-      const response = await registerUser(form);
-      toast.success(`✅ ${response.message || "Registered successfully"}`);
+      const response = await axios.post("https://attendance-mvp-1.onrender.com/api/auth/register", form);
+      toast.success(`✅ ${response.data.message || "Registered successfully"}`);
       navigate(`/?name=${encodeURIComponent(form.name)}&role=${encodeURIComponent(form.role)}`);
     } catch (err) {
-      toast.error(`❌ ${err.response?.data?.message || err.message || "Registration failed"}`);
-    } finally {
-      setLoading(false);
+      toast.error(` ${err.response?.data?.message || "Registration failed"}`);
     }
   };
 
@@ -69,25 +92,47 @@ export default function Signup() {
       >
         <h2 className="text-2xl font-semibold text-center text-gray-800">Create an Account</h2>
 
-        <input
-          type="text"
-          name="name"
-          placeholder="Full Name"
-          value={form.name}
-          onChange={handleChange}
-          className="w-full p-2 border rounded-xl"
-          required
-        />
+        <input type="text" name="name" placeholder="Full Name" value={form.name}
+          onChange={handleChange} className="w-full p-2 border rounded-xl" required />
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Email (Use your @imsnoida.com)"
-          value={form.email}
-          onChange={handleChange}
-          className={`w-full p-2 border rounded-xl ${!emailValid ? 'border-red-500' : ''}`}
-          required
-        />
+        <div className="flex gap-2">
+          <input
+            type="email"
+            name="email"
+            placeholder="Email (Use your @imsnoida.com)"
+            value={form.email}
+            onChange={handleChange}
+            className={`w-full p-2 border rounded-xl ${!emailValid ? 'border-red-500' : ''}`}
+            required
+          />
+          <button
+            type="button"
+            onClick={sendOtp}
+            className="px-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700"
+          >
+            Send OTP
+          </button>
+        </div>
+
+        {otpSent && (
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Enter OTP"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              className="w-full p-2 border rounded-xl"
+              required
+            />
+            <button
+              type="button"
+              onClick={verifyOtp}
+              className="px-4 bg-green-600 text-white rounded-xl hover:bg-green-700"
+            >
+              Verify OTP
+            </button>
+          </div>
+        )}
 
         <input
           type="password"
@@ -123,9 +168,9 @@ export default function Signup() {
         <button
           type="submit"
           className="w-full bg-[#002147] text-white py-2 rounded-xl hover:bg-[#003366] transition flex items-center justify-center"
-          disabled={loading}
+          disabled={!otpVerified}
         >
-          {loading ? 'Signing up...' : 'Sign Up'}
+          Sign Up
         </button>
 
         <p className="text-center text-sm mt-2">
